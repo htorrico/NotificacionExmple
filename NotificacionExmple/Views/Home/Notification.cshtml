@@ -1,0 +1,77 @@
+﻿@{
+    ViewBag.Title = "Tareas";
+}
+
+<h2>Listado de tareas</h2>
+
+<ul>
+    <li>
+        <input type="checkbox" data-element="1" />
+        Elemento 1
+    </li>
+    <li>
+        <input type="checkbox" data-element="2" />
+        Elemento 2
+    </li>
+    <li>
+        <input type="checkbox" data-element="3" />
+        Elemento 3
+    </li>
+    <li>
+        <input type="checkbox" data-element="4" />
+        Elemento 4
+    </li>
+    <li>
+        <input type="checkbox" data-element="5" />
+        Elemento 5
+    </li>
+</ul>
+<label>Name:</label>
+<input type="text" id="txtName" />
+<br />
+<label>Message:</label>
+<input type="text" id="txtMessage"/>
+<input type="button"  id="btnSend" value="Send" />
+<br />
+<label>Chat:</label>
+<br />
+<div id="divResult"></div>
+
+
+@section Scripts {
+    <script src="~/Scripts/jquery.signalR-2.4.1.js"></script>
+
+    <script src="~/signalr/hubs"></script>
+
+    <script>
+        $(function () {
+
+            var notification = $.connection.notificationHub;
+
+
+            notification.client.markDone = function (taskId, taskResult) {
+                var element = $('[data-element="' + taskId + '"]');
+                $(element).prop('checked', taskResult);
+            };
+
+            notification.client.hello = function (message) {
+                var text =  message + '<br/>';   
+                $('#divResult').append(text);
+            };
+
+            $.connection.hub.start().done(function () {
+
+                $('input[type="checkbox"]').click(function () {
+                    notification.server.notificate($(this).attr('data-element'), $(this).is(':checked'));                    
+                });
+
+                $('#btnSend').click(function () {
+                    console.log($('#txtMessage').val());
+                    notification.server.notificateHello($('#txtName').val() + ' : ' + $('#txtMessage').val());                    
+                });
+            });
+
+            $.connection.hub.logging = true;
+        });
+    </script>
+}
